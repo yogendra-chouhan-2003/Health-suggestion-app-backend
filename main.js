@@ -24,8 +24,8 @@ mongoose.connect(process.env.MONGODB_URL).then(result=>{
     app.use("/server",ServerRoutes);
     app.use("/api",SymptomRoutes);
     app.use("/contact",ContactRoutes);
-    app.listen(3000,()=>{
-        console.log("server started on 3000 port !!!")
+    app.listen(process.env.PORT,()=>{
+        console.log(`server started on ${process.env.PORT} port !!!`)
     })
 
 }).catch(err=>{
