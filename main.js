@@ -15,7 +15,7 @@ const app = express();
 mongoose.connect(process.env.MONGODB_URL).then(result=>{
     console.log("Database connected successfully!!!!!!!!");
     app.use(express.static("public"));
-    app.use(cors({origin: "http://localhost:5173", // frontend
+    app.use(cors({origin: ['http://localhost:5173', 'https://health-suggestion-app-frontend.onrender.com'], // frontend
     credentials: true,}));
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({extended:true}));
