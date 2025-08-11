@@ -11,24 +11,30 @@ import ContactRoutes from "./routes/contact.router.js";
 dotenv.config();
 
 const app = express();
+app.use(cors({
+    origin: ['http://localhost:5173', 'https://health-suggestion-app-frontend.onrender.com'], // frontend
+    credentials: true
+}));
 
-mongoose.connect(process.env.MONGODB_URL).then(result=>{
+app.use(express.static("public"));
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+app.use("/user", UserRoutes);
+app.use("/server", ServerRoutes);
+app.use("/api", SymptomRoutes);
+app.use("/contact", ContactRoutes);
+mongoose.connect(process.env.MONGODB_URL).then(result => {
     console.log("Database connected successfully!!!!!!!!");
-    app.use(express.static("public"));
-    app.use(cors({origin: ['http://localhost:5173', 'https://health-suggestion-app-frontend.onrender.com'], // frontend
-    credentials: true,}));
-    app.use(bodyParser.json());
-    app.use(bodyParser.urlencoded({extended:true}));
-    app.use(cookieParser());
-    app.use("/user",UserRoutes);
-    app.use("/server",ServerRoutes);
-    app.use("/api",SymptomRoutes);
-    app.use("/contact",ContactRoutes);
-    app.listen(process.env.PORT,()=>{
+
+
+    app.listen(process.env.PORT || 3000, () => {
         console.log(`server started on ${process.env.PORT} port !!!`)
     })
 
-}).catch(err=>{
+}).catch(err => {
     console.log(err);
     console.log("data base is not connected!!!!!!!!");
 })
