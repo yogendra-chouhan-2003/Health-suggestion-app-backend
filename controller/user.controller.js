@@ -163,8 +163,9 @@ export const CreateUser = async (req, res) => {
         let { name, email, password, contact } = req.body;
         let saltKey = await bcrypt.genSalt(12);
         password = await bcrypt.hash(password, saltKey);
-        let result = await User.create({ name, email, password, contact });
         await sendEmail(email, name);
+        let result = await User.create({ name, email, password, contact });
+        
         return res.status(201).json({ message: "user created & open email to verify account!", user: result });
     } catch (err) {
         console.log(err);
@@ -239,8 +240,8 @@ export const Authentication = async (req, res) => {
         let status = bcrypt.compareSync(password, user.password);
         status && res.cookie("token", generateToken(user.id, user.email), {
             httpOnly: true,
-            secure: false,
-            sameSite: "lax"
+            secure: true,
+            sameSite: "none"
         });
         return status ? res.status(201).json({ message: "sign-in is successfull!", user }) : res.status(401).json({ error: "Unauthorized user || password is not found!" });
 
@@ -260,7 +261,12 @@ const generateToken = (userId, userEmail) => {
 
 export const Logout = async (req, res) => {
     try {
-        res.clearCookie("token");
+        res.clearCookie("token", {
+            httpOnly: true,
+            secure: true,
+            sameSite: "none"
+        });
+
         res.status(201).json({ message: "Logout successfull!!!" });
 
     } catch (err) {
