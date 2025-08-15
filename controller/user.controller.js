@@ -14,7 +14,6 @@ export const resetPassword = async (req, res) => {
         let saltKey = await bcrypt.genSaltSync(12);
         const hashedPassword = await bcrypt.hashSync(password, saltKey);
         console.log(hashedPassword);
-        //const hashedPassword = await bcrypt.hash(password, 10);
         await User.findByIdAndUpdate(id, { password: hashedPassword });
 
         res.status(200).json({ message: "Password reset successful!" });
@@ -165,7 +164,7 @@ export const CreateUser = async (req, res) => {
         password = await bcrypt.hash(password, saltKey);
         await sendEmail(email, name);
         let result = await User.create({ name, email, password, contact });
-        
+
         return res.status(201).json({ message: "user created & open email to verify account!", user: result });
     } catch (err) {
         console.log(err);
@@ -176,6 +175,9 @@ export const CreateUser = async (req, res) => {
 const sendEmail = (email, name) => {
     return new Promise((resolve, reject) => {
         let transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            port: 465,
+            secure: true,
             service: 'gmail',
             auth: {
                 user: process.env.EMAIL,
@@ -183,7 +185,7 @@ const sendEmail = (email, name) => {
             }
         });
 
-        //https://health-suggestion-app-backend.onrender.com
+
         let mailOptions = {
             from: process.env.EMAIL,
             to: email,
