@@ -7,6 +7,7 @@ import nodemailer from "nodemailer";
 import { OAuth2Client } from "google-auth-library";
 dotenv.config();
 
+
 //resetPassword
 export const resetPassword = async (req, res) => {
     const { password } = req.body;
@@ -187,7 +188,7 @@ const sendEmail = (email, name) => {
             }
         });
 
-        //https://health-suggestion-app-backend.onrender.com
+
         let mailOptions = {
             from: process.env.EMAIL,
             to: email,
@@ -270,12 +271,11 @@ export const googleAuth = async (req, res) => {
         if (!user) {
             user = await User.create({ name, email, password: "", contact: "", isVerified: true, profile: { imageName: picture } });
         }else if (!user.isVerified) {
-            // Existing user ko verify kar do
             user.isVerified = true;
             await user.save();
         }
 
-        // JWT token same tarike se set karo jaise Authentication me
+
         const jwtToken = jwt.sign({ userId: user._id, userEmail: user.email }, process.env.TOKEN_SECRET);
         res.cookie("token", jwtToken, {
             httpOnly: true,
