@@ -5,4 +5,5 @@ const router = express.Router();
 
 router.post("/ask",auth,CreateServer);
 
+
 export default router;

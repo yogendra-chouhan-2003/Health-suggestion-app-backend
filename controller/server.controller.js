@@ -14,17 +14,22 @@ export const CreateServer = async (req, res) => {
     return res.status(400).json({ error: "Prompt is required" });
   }
 
-  // const finalPrompt = `You are a professional health assistant.${prompt}`;
-
+  const finalPrompt = `
+  You are a professional health assistant.
+  - Always give answers in simple and clear language.
+  - Provide only health-related suggestions (not entertainment or irrelevant info).
+  - If user asks non-health question, politely refuse.
+  User question: ${prompt}
+  `;
 
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const result = await model.generateContent(prompt);
+    const result = await model.generateContent(finalPrompt);
     const response = await result.response;
     const text = await response.text();
 
-    //Save to history (if needed in future)
+    //Save to history
     await User.findByIdAndUpdate(userId, {
       $push: {
         history: { prompt, response: text }

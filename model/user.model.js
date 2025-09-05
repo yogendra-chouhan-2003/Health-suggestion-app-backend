@@ -13,12 +13,10 @@ const UserSchema = mongoose.Schema({
 
     },
     password:{
-        type:String,
-        required:true
+        type:String
     },
     contact:{
-        type:String,
-        required:true
+        type:String
     },
     isVerified:{
         type:Boolean,

@@ -8,11 +8,12 @@ import UserRoutes from "./routes/user.router.js";
 import ServerRoutes from "./routes/server.router.js"
 import SymptomRoutes from "./routes/symptom.router.js";
 import ContactRoutes from "./routes/contact.router.js";
+import reportRoutes from "./routes/report.router.js";
 dotenv.config();
 
 const app = express();
 app.use(cors({
-    origin: ['http://localhost:5173', 'https://health-suggestion-app-frontend.onrender.com'], // frontend
+    origin: ['http://localhost:5173', 'https://healthgemini-frontend.onrender.com'],
     credentials: true
 }));
 
@@ -26,6 +27,7 @@ app.use("/user", UserRoutes);
 app.use("/server", ServerRoutes);
 app.use("/api", SymptomRoutes);
 app.use("/contact", ContactRoutes);
+app.use("/api/reports", reportRoutes);
 mongoose.connect(process.env.MONGODB_URL).then(result => {
     console.log("Database connected successfully!!!!!!!!");
 

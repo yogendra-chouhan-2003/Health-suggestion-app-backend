@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
+import { OAuth2Client } from "google-auth-library";
 dotenv.config();
 
 //resetPassword
@@ -11,10 +12,9 @@ export const resetPassword = async (req, res) => {
     const { password } = req.body;
     const { id } = req.params;
     try {
-        let saltKey = await bcrypt.genSaltSync(12);
-        const hashedPassword = await bcrypt.hashSync(password, saltKey);
-        console.log(hashedPassword);
-        //const hashedPassword = await bcrypt.hash(password, 10);
+        let saltKey = await bcrypt.genSalt(12);
+        const hashedPassword = await bcrypt.hash(password, saltKey);
+        console.log(hashedPassword);                                                                                                                            
         await User.findByIdAndUpdate(id, { password: hashedPassword });
 
         res.status(200).json({ message: "Password reset successful!" });
@@ -161,11 +161,15 @@ export const CreateUser = async (req, res) => {
         }
 
         let { name, email, password, contact } = req.body;
+        let existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(409).json({ error: "Email already exists!" });
+        }
         let saltKey = await bcrypt.genSalt(12);
         password = await bcrypt.hash(password, saltKey);
-        await sendEmail(email, name);
         let result = await User.create({ name, email, password, contact });
-        
+        await sendEmail(email, name);
+
         return res.status(201).json({ message: "user created & open email to verify account!", user: result });
     } catch (err) {
         console.log(err);
@@ -237,8 +241,8 @@ export const Authentication = async (req, res) => {
         if (!user.isVerified) {
             return res.status(401).json({ error: "user is not verified!!" });
         }
-        let status = bcrypt.compareSync(password, user.password);
-        status && res.cookie("token", generateToken(user.id, user.email), {
+        let status = bcrypt.compare(password, user.password);
+        status && res.cookie("token", generateToken(user._id, user.email), {
             httpOnly: true,
             secure: true,
             sameSite: "none"
@@ -249,6 +253,42 @@ export const Authentication = async (req, res) => {
     } catch (err) {
         console.log(err);
         return res.status(500).json({ error: "internal server error!!" });
+    }
+}
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+export const googleAuth = async (req, res) => {
+    try {
+        const { token } = req.body;
+        const ticket = await client.verifyIdToken({
+            idToken: token,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+        const { email, name, picture } = ticket.getPayload();
+
+        let user = await User.findOne({ email });
+        if (!user) {
+            user = await User.create({ name, email, password: "", contact: "", isVerified: true, profile: { imageName: picture } });
+        }else if (!user.isVerified) {
+            // Existing user ko verify kar do
+            user.isVerified = true;
+            await user.save();
+        }
+
+        // JWT token same tarike se set karo jaise Authentication me
+        const jwtToken = jwt.sign({ userId: user._id, userEmail: user.email }, process.env.TOKEN_SECRET);
+        res.cookie("token", jwtToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "none",
+        });
+
+        return res.status(200).json({ message: "Google login success", user });
+
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ error: "Google login failed" });
+
     }
 }
 

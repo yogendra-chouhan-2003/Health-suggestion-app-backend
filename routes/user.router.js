@@ -1,6 +1,6 @@
 import express from "express";
 import { body} from "express-validator";
-import {CreateUser ,resetPassword, forgotPassword,verification,Authentication,Logout,GetUserHistory,addToFavorites,getAllFavorites,removeFavorite,createProfile,getUserProfile} from "../controller/user.controller.js";
+import {CreateUser ,resetPassword, forgotPassword,verification,Authentication,googleAuth, Logout,GetUserHistory,addToFavorites,getAllFavorites,removeFavorite,createProfile,getUserProfile} from "../controller/user.controller.js";
 import { auth } from "../middleware/auth.js";
 import multer from "multer";
 
@@ -20,6 +20,7 @@ router.post("/",
 )
 router.post("/verification",verification);
 router.post("/authentication",Authentication);
+router.post("/google", googleAuth);
 router.delete("/logout",Logout);
 
 
